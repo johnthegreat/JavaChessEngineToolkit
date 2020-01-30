@@ -86,7 +86,7 @@ public class UciEngine extends Engine {
 
 			int fromSqi = Chess.strToSqi(fromSqStr);
 			int toSqi = Chess.strToSqi(toSqStr);
-			int promoPiece = promoPieceStr == null ? Chess.NO_PIECE : Chess.charToPiece(promoPieceStr.charAt(0));
+			int promoPiece = promoPieceStr == null ? Chess.NO_PIECE : Chess.charToPiece(promoPieceStr.toUpperCase().charAt(0));
 
 			short shortValue = position.getMove(fromSqi, toSqi, promoPiece);
 
