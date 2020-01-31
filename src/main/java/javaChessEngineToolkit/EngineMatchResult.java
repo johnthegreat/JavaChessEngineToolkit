@@ -28,10 +28,12 @@ import chesspresso.game.Game;
 public class EngineMatchResult {
 	private Game game;
 	private GameResult gameResult;
+	private String reason;
 	
-	public EngineMatchResult(Game game,GameResult gameResult) {
+	public EngineMatchResult(Game game,GameResult gameResult,String reason) {
 		this.game = game;
 		this.gameResult = gameResult;
+		this.reason = reason;
 	}
 	
 	public Game getGame() {
@@ -40,5 +42,9 @@ public class EngineMatchResult {
 	
 	public GameResult getGameResult() {
 		return gameResult;
+	}
+
+	public String getReason() {
+		return reason;
 	}
 }

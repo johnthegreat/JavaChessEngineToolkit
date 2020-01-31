@@ -50,4 +50,6 @@ public abstract class Engine {
 	}
 
 	public abstract Future<Move[]> requestMove(GameContext gameContext);
+
+	public abstract void startNewGame(GameContext gameContext);
 }

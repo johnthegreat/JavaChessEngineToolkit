@@ -85,4 +85,9 @@ public class RandomMoveGenerator extends Engine implements ScoringAlgorithm {
 	public int getEstimatedElo() {
 		return 200;
 	}
+
+	@Override
+	public void startNewGame(GameContext gameContext) {
+
+	}
 }

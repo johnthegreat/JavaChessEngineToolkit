@@ -24,7 +24,9 @@
 package javaChessEngineToolkit.engines;
 
 import chesspresso.Chess;
+import chesspresso.game.Game;
 import chesspresso.position.Position;
+import javaChessEngineToolkit.ChesspressoUtils;
 import javaChessEngineToolkit.Engine;
 import javaChessEngineToolkit.GameContext;
 import javaChessEngineToolkit.Move;
@@ -104,13 +106,20 @@ public class UciEngine extends Engine {
 		final CompletableFuture<Move[]> moveFuture = new CompletableFuture<Move[]>();
 		final Position position = gameContext.getGame().getPosition();
 		try {
-			sendUciNewGame();
-			sendPosition(position.getFEN());
+			final Game gameCopy = new Game(gameContext.getGame().getModel());
+			gameCopy.gotoStart();
+			final chesspresso.move.Move[] mainLineMoves = gameCopy.getMainLine();
+			String[] moves = new String[mainLineMoves.length];
+			for(int i=0;i<mainLineMoves.length;i++) {
+				final chesspresso.move.Move move = mainLineMoves[i];
+				moves[i] = Chess.sqiToStr(move.getFromSqi()) + Chess.sqiToStr(move.getToSqi()) + (move.isPromotion() ? String.valueOf(Chess.pieceToChar(move.getPromo())).toLowerCase() : "");
+			}
+			sendPosition("startpos",moves);
+			//sendPosition(position.getFEN(),null);
 
 			if (gameContext.isTimed()) {
-				boolean amIWhite = this == gameContext.getWhiteEngine();
-				long myClock = gameContext.getChessClock().getClockForColor(amIWhite ? Chess.WHITE : Chess.BLACK);
-				sendGo((amIWhite ? "wtime " : "btime") + " " + myClock);
+				// winc %d binc %d
+				sendGo(String.format("wtime %d btime %d",gameContext.getChessClock().getClockForColor(Chess.WHITE),gameContext.getChessClock().getClockForColor(Chess.BLACK)));
 			} else {
 				sendGo("");
 			}
@@ -136,6 +145,11 @@ public class UciEngine extends Engine {
 		}
 
 		return moveFuture;
+	}
+
+	@Override
+	public void startNewGame(GameContext gameContext) {
+		sendUciNewGame();
 	}
 
 	protected void write(final String line) {
@@ -180,8 +194,22 @@ public class UciEngine extends Engine {
 		write("ucinewgame");
 	}
 
-	public void sendPosition(String fen) {
-		write("position fen " + fen);
+	public void sendPosition(String fen,String[] moves) {
+		StringBuilder stringBuilder = new StringBuilder();
+		if (fen.equals("startpos")) {
+			stringBuilder.append("position startpos");
+		} else {
+			stringBuilder.append("position fen ");
+			stringBuilder.append(fen);
+		}
+		if (moves != null && moves.length > 0) {
+			stringBuilder.append(" moves ");
+			for (String move : moves) {
+				stringBuilder.append(move);
+				stringBuilder.append(" ");
+			}
+		}
+		write(stringBuilder.toString().trim());
 	}
 
 	public void sendGo(String args) {

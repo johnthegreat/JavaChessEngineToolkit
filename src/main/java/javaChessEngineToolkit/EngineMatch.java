@@ -50,8 +50,9 @@ public class EngineMatch {
 			chessClock = new ChessClock(engineMatchOptions.getTime()*60*1000,engineMatchOptions.getTime()*60*1000);
 		}
 
+		String gameReason = null;
 		GameResult gameResult = null;
-		EngineMatchResult engineMatchResult = null;
+		EngineMatchResult engineMatchResult;
 		
 		final Game game = new Game();
 		game.setTag(PGN.TAG_WHITE,whiteEngine.getName());
@@ -60,6 +61,8 @@ public class EngineMatch {
 		game.setTag(PGN.TAG_BLACK_ELO,String.valueOf(blackEngine.getEstimatedElo()));
 
 		GameContext gameContext = new GameContext(game,chessClock,whiteEngine,blackEngine);
+		whiteEngine.startNewGame(gameContext);
+		blackEngine.startNewGame(gameContext);
 
 //		final ChessClock finalChessClock = chessClock;
 
@@ -81,15 +84,19 @@ public class EngineMatch {
 			if (chessClock != null) {
 				if (chessClock.getClockForColor(Chess.WHITE) <= 0) {
 					gameResult = GameResult.BLACK_WIN;
+					gameReason = "White forfeits on time.";
 					break;
 				}
 				if (chessClock.getClockForColor(Chess.BLACK) <= 0) {
 					gameResult = GameResult.WHITE_WIN;
+					gameReason = "Black forfeits on time.";
+					break;
 				}
 			}
 
 			if (ChesspressoUtils.isDraw(game.getPosition())) {
 				gameResult = GameResult.DRAW;
+				gameReason = "Game drawn.";
 				break;
 			}
 
@@ -113,16 +120,19 @@ public class EngineMatch {
 
 				if (game.getPosition().isMate()) {
 					gameResult = GameResult.WHITE_WIN;
+					gameReason = "Black checkmated.";
 					break;
 				}
 			}
 			
 			if (game.getPosition().isStaleMate()) {
 				gameResult = GameResult.DRAW;
+				gameReason = "Game drawn due to stalemate.";
 				break;
 			}
 			if (ChesspressoUtils.isDraw(game.getPosition())) {
 				gameResult = GameResult.DRAW;
+				gameReason = "Game drawn.";
 				break;
 			}
 
@@ -146,13 +156,14 @@ public class EngineMatch {
 
 				if (game.getPosition().isMate()) {
 					gameResult = GameResult.BLACK_WIN;
+					gameReason = "White checkmated.";
 					break;
 				}
 			}
 		}
 		
 		game.setTag(PGN.TAG_RESULT,getResult(gameResult));
-		engineMatchResult = new EngineMatchResult(game,gameResult);
+		engineMatchResult = new EngineMatchResult(game,gameResult,gameReason);
 		return engineMatchResult;
 	}
 	
@@ -162,7 +173,7 @@ public class EngineMatch {
 		} else if (gameResult == GameResult.DRAW) {
 			return "1/2-1/2";
 		} else if (gameResult == GameResult.BLACK_WIN) {
-			return "1-0";
+			return "0-1";
 		}
 		return null;
 	}

@@ -93,4 +93,9 @@ public class SlightlyStrongerMoveGenerator extends Engine implements ScoringAlgo
 		completableFuture.complete(arr);
 		return completableFuture;
 	}
+
+	@Override
+	public void startNewGame(GameContext gameContext) {
+
+	}
 }
